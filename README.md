@@ -134,3 +134,5 @@ And any relevant Laravel log output from `storage/logs/laravel.log`.
 ---
 
 **Built with ❤️ for Beauty Skin from fikr and ghz**
+
+<img width="1146" height="4547" alt="Image" src="https://github.com/user-attachments/assets/a0ee7ade-f375-4f03-a42a-b64b07a33943" />
