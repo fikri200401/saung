@@ -9,20 +9,22 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        $totalBookings = $user->bookings()->count();
-        $completedBookings = $user->bookings()->where('status', 'completed')->count();
-        $pendingBookings = $user->bookings()
-            ->whereIn('status', ['auto_approved', 'waiting_deposit', 'deposit_confirmed'])
+        // Get reservation statistics (Saung Nyonyah)
+        $totalReservations = $user->reservations()->count();
+        $completedReservations = $user->reservations()->where('status', 'completed')->count();
+        $pendingReservations = $user->reservations()
+            ->whereIn('status', ['auto_approved', 'waiting_deposit', 'deposit_confirmed', 'confirmed'])
             ->count();
         
-        $recentBookings = $user->bookings()
-            ->with(['treatment', 'doctor'])
+        $recentReservations = $user->reservations()
+            ->with(['saung', 'menus'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
 
-        return view('customer.dashboard', compact('user', 'totalBookings', 'completedBookings', 'pendingBookings', 'recentBookings'));
+        return view('customer.dashboard', compact('user', 'totalReservations', 'completedReservations', 'pendingReservations', 'recentReservations'));
     }
 }

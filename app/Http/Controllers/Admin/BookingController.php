@@ -9,6 +9,7 @@ use App\Models\Doctor;
 use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
@@ -21,7 +22,8 @@ class BookingController extends Controller
 
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'treatment', 'doctor', 'deposit']);
+        // Query hanya reservations (data baru)
+        $query = \App\Models\Reservation::with(['user', 'saung', 'menus', 'deposit']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -30,16 +32,16 @@ class BookingController extends Controller
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->whereDate('booking_date', '>=', $request->date_from);
+            $query->whereDate('reservation_date', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $query->whereDate('booking_date', '<=', $request->date_to);
+            $query->whereDate('reservation_date', '<=', $request->date_to);
         }
 
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('booking_code', 'like', '%' . $request->search . '%')
+                $q->where('reservation_code', 'like', '%' . $request->search . '%')
                   ->orWhereHas('user', function($q2) use ($request) {
                       $q2->where('name', 'like', '%' . $request->search . '%')
                          ->orWhere('whatsapp_number', 'like', '%' . $request->search . '%');
@@ -47,16 +49,26 @@ class BookingController extends Controller
             });
         }
 
-        $bookings = $query->orderBy('booking_date', 'desc')
-            ->orderBy('booking_time', 'desc')
+        $bookings = $query->orderBy('reservation_date', 'desc')
+            ->orderBy('reservation_time', 'desc')
             ->paginate(20);
 
         return view('admin.bookings.index', compact('bookings'));
     }
 
-    public function show(Booking $booking)
+    public function show($id)
     {
-        $booking->load(['user', 'treatment', 'doctor', 'deposit', 'feedback', 'beforeAfterPhotos']);
+        // Try Reservation first (new system)
+        $reservation = \App\Models\Reservation::with(['user', 'saung', 'menus', 'deposit'])->find($id);
+        
+        if ($reservation) {
+            // New system: pass as $booking for view compatibility
+            $booking = $reservation;
+            return view('admin.bookings.show', compact('booking'));
+        }
+        
+        // Fallback to Booking (old system)
+        $booking = Booking::with(['user', 'treatment', 'doctor', 'deposit', 'feedback', 'beforeAfterPhotos'])->findOrFail($id);
         
         return view('admin.bookings.show', compact('booking'));
     }
@@ -132,32 +144,49 @@ class BookingController extends Controller
     }
 
     /**
-     * Cancel booking
+     * Cancel booking (dual system support)
      */
-    public function cancel(Request $request, Booking $booking)
+    public function cancel(Request $request, $id)
     {
         $request->validate([
             'admin_notes' => 'nullable|string',
         ]);
 
-        $result = $this->bookingService->cancelBooking($booking->id, $request->admin_notes);
+        // Try Reservation first, then Booking
+        $reservation = \App\Models\Reservation::find($id);
+        if ($reservation) {
+            $reservationService = app(\App\Services\ReservationService::class);
+            $result = $reservationService->cancelReservation($reservation->id, $request->admin_notes);
+        } else {
+            $booking = \App\Models\Booking::findOrFail($id);
+            $result = $this->bookingService->cancelBooking($booking->id, $request->admin_notes);
+        }
 
-        return back()->with('success', 'Booking berhasil dibatalkan.');
+        return back()->with('success', 'Booking/Reservasi berhasil dibatalkan.');
     }
 
     /**
-     * Complete booking
+     * Complete booking (dual system support)
      */
-    public function complete(Booking $booking)
+    public function complete($id)
     {
-        $result = $this->bookingService->completeBooking($booking->id);
+        // Try Reservation first, then Booking
+        $reservation = \App\Models\Reservation::find($id);
+        if ($reservation) {
+            $reservationService = app(\App\Services\ReservationService::class);
+            $result = $reservationService->completeReservation($reservation->id);
+        } else {
+            $booking = \App\Models\Booking::findOrFail($id);
+            $result = $this->bookingService->completeBooking($booking->id);
+        }
+
+        return back()->with('success', 'Booking/Reservasi berhasil diselesaikan.');
 
         return back()->with('success', 'Booking berhasil diselesaikan.');
     }
 
     /**
-<<<<<<< HEAD
-=======
+
      * Mark booking as no-show and forfeit deposit (for testing)
      */
     public function markAsNoShow(Request $request, Booking $booking)
@@ -182,7 +211,7 @@ class BookingController extends Controller
             // Create no-show note
             $booking->noShowNote()->create([
                 'notes' => $request->reason ?? 'Customer tidak datang pada jadwal yang ditentukan',
-                'recorded_by' => auth()->id(),
+                'recorded_by' => Auth::id(),
             ]);
         }
 
@@ -190,7 +219,7 @@ class BookingController extends Controller
     }
 
     /**
->>>>>>> 37f6b61 (upload project)
+
      * Update admin notes
      */
     public function updateNotes(Request $request, Booking $booking)

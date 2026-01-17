@@ -13,6 +13,7 @@ class VoucherUsage extends Model
         'voucher_id',
         'user_id',
         'booking_id',
+        'reservation_id',
         'discount_amount',
     ];
 
@@ -36,5 +37,10 @@ class VoucherUsage extends Model
     public function booking()
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function reservation()
+    {
+        return $this->belongsTo(Reservation::class);
     }
 }
