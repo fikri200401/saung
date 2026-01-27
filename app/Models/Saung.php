@@ -16,7 +16,6 @@ class Saung extends Model
         'capacity',
         'location',
         'description',
-        'photo',
         'image',
         'price_per_hour',
         'is_active',

@@ -211,7 +211,10 @@ class ReservationController extends Controller
         }
 
         $path = $request->file('proof_of_payment')->store('deposits', 'public');
-        $reservation->deposit->update(['proof_of_payment' => $path]);
+        $reservation->deposit->update([
+            'proof_image' => $path,
+            'uploaded_at' => now()
+        ]);
 
         return back()->with('success', 'Bukti pembayaran berhasil diupload. Menunggu verifikasi admin.');
     }

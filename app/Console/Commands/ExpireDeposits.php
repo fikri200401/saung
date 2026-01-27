@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Deposit;
-use App\Models\Booking;
 use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
@@ -41,7 +40,7 @@ class ExpireDeposits extends Command
         // Get all pending deposits that passed deadline
         $expiredDeposits = Deposit::where('status', 'pending')
             ->where('deadline_at', '<', now())
-            ->with('booking')
+            ->with('reservation')
             ->get();
 
         $count = 0;
@@ -50,14 +49,17 @@ class ExpireDeposits extends Command
             // Update deposit status
             $deposit->update(['status' => 'expired']);
 
-            // Update booking status
-            $deposit->booking->update(['status' => 'expired']);
+            // Update reservation status
+            if ($deposit->reservation) {
+                $deposit->reservation->update(['status' => 'expired']);
 
-            // Send notification to customer
-            $this->whatsappService->sendDepositExpired($deposit->booking);
+                // Send notification to customer
+                $this->whatsappService->sendDepositExpired($deposit->reservation);
+
+                $this->info("Expired: Reservation #{$deposit->reservation->reservation_code}");
+            }
 
             $count++;
-            $this->info("Expired: Booking #{$deposit->booking->booking_code}");
         }
 
         $this->info("Total expired deposits: {$count}");

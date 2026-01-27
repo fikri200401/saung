@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Booking;
+use App\Models\Reservation;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -14,14 +14,14 @@ class SendBookingReminders extends Command
      *
      * @var string
      */
-    protected $signature = 'bookings:send-reminders';
+    protected $signature = 'reservations:send-reminders';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Send WhatsApp reminders for upcoming bookings (H-1)';
+    protected $description = 'Send WhatsApp reminders for upcoming reservations (H-1)';
 
     protected $whatsappService;
 
@@ -36,23 +36,23 @@ class SendBookingReminders extends Command
      */
     public function handle()
     {
-        $this->info('Sending booking reminders...');
+        $this->info('Sending reservation reminders...');
 
-        // Get bookings for tomorrow
+        // Get reservations for tomorrow
         $tomorrow = Carbon::tomorrow()->toDateString();
 
-        $bookings = Booking::whereIn('status', ['auto_approved', 'deposit_confirmed'])
-            ->whereDate('booking_date', $tomorrow)
-            ->with(['user', 'treatment', 'doctor'])
+        $reservations = Reservation::whereIn('status', ['confirmed', 'deposit_confirmed'])
+            ->whereDate('reservation_date', $tomorrow)
+            ->with(['user', 'saung', 'menus'])
             ->get();
 
         $count = 0;
 
-        foreach ($bookings as $booking) {
-            $this->whatsappService->sendBookingReminder($booking);
+        foreach ($reservations as $reservation) {
+            $this->whatsappService->sendReservationReminder($reservation);
             
             $count++;
-            $this->info("Reminder sent: Booking #{$booking->booking_code} - {$booking->user->name}");
+            $this->info("Reminder sent: Reservation #{$reservation->reservation_code} - {$reservation->user->name}");
         }
 
         $this->info("Total reminders sent: {$count}");

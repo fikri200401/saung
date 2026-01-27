@@ -146,12 +146,12 @@
                             </dd>
                         </div>
 
-                        @if($deposit->proof_of_payment)
+                        @if($deposit->proof_image)
                         <div class="sm:col-span-2">
                             <dt class="text-sm font-medium text-gray-500 mb-2">Bukti Transfer</dt>
                             <dd class="mt-1">
-                                <a href="{{ asset('storage/' . $deposit->proof_of_payment) }}" target="_blank">
-                                    <img src="{{ asset('storage/' . $deposit->proof_of_payment) }}" 
+                                <a href="{{ asset('storage/' . $deposit->proof_image) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $deposit->proof_image) }}" 
                                          alt="Bukti Transfer" 
                                          class="max-w-full h-auto rounded-lg border-2 border-gray-300 shadow-lg hover:shadow-xl transition cursor-pointer hover:border-indigo-500">
                                 </a>

@@ -61,11 +61,6 @@ class User extends Authenticatable
     /**
      * Relationships
      */
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
-
     public function reservations()
     {
         return $this->hasMany(Reservation::class);

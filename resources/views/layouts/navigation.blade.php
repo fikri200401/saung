@@ -38,7 +38,7 @@
                             </svg>
                             Dashboard
                         </a>
-                        <a href="{{ route('customer.bookings.index') }}" class="px-4 py-2 rounded-lg text-sm font-semibold transition {{ request()->routeIs('customer.bookings.*') ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md' : 'text-gray-600 hover:bg-green-50 hover:text-green-600' }}">
+                        <a href="{{ route('customer.reservations.index') }}" class="px-4 py-2 rounded-lg text-sm font-semibold transition {{ request()->routeIs('customer.reservations.*') ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md' : 'text-gray-600 hover:bg-green-50 hover:text-green-600' }}">
                             <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
@@ -112,11 +112,11 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="{{ route('customer.bookings.index') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-semibold transition {{ request()->routeIs('customer.bookings.*') ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-transparent text-gray-600 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600' }}">
+                <a href="{{ route('customer.reservations.index') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-semibold transition {{ request()->routeIs('customer.reservations.*') ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-transparent text-gray-600 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600' }}">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
-                    Riwayat Booking
+                    Riwayat Reservasi
                 </a>
             @endif
         </div>

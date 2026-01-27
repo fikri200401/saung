@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('no_show_notes', function (Blueprint $table) {
+        // Tabel tidak dibuat - tidak digunakan untuk sistem saung
+        /* Schema::create('no_show_notes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('booking_id')->nullable()->constrained()->onDelete('set null');
@@ -17,11 +18,11 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index('user_id');
-        });
+        }); */
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('no_show_notes');
+        // Schema::dropIfExists('no_show_notes');
     }
 };

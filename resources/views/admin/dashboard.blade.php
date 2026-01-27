@@ -79,7 +79,7 @@
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <a href="{{ route('admin.bookings.index') }}" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <a href="{{ route('admin.reservations.index') }}" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Kelola Reservasi</h3>
                 <p class="text-sm text-gray-600">Lihat dan kelola semua reservasi</p>
             </a>

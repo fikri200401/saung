@@ -17,12 +17,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
-            DoctorSeeder::class,
             SaungSeeder::class,
             MenuSeeder::class,
             SettingSeeder::class,
             VoucherSeeder::class,
-            ReservationSeeder::class, // Data reservasi saung (bukan booking salon)
+            ReservationSeeder::class,
             FeedbackSeeder::class,
         ]);
     }

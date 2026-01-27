@@ -8,16 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('voucher_usages', function (Blueprint $table) {
-            $table->foreignId('reservation_id')->nullable()->after('booking_id')->constrained('reservations')->onDelete('set null');
-        });
+        // Migration tidak diperlukan - reservation_id sudah ada di create_voucher_usages_table
     }
 
     public function down(): void
     {
-        Schema::table('voucher_usages', function (Blueprint $table) {
-            $table->dropForeign(['reservation_id']);
-            $table->dropColumn('reservation_id');
-        });
+        // No action needed
     }
 };

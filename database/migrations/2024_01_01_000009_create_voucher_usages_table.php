@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('voucher_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('booking_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('reservation_id')->nullable()->constrained('reservations')->onDelete('set null');
             $table->decimal('discount_amount', 10, 2);
             $table->timestamps();
             

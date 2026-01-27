@@ -30,7 +30,7 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="{{ route('admin.bookings.index') }}" class="flex items-center px-6 py-3 hover:bg-emerald-800 {{ request()->routeIs('admin.bookings.*') ? 'bg-emerald-800 border-l-4 border-green-400' : '' }}">
+                <a href="{{ route('admin.reservations.index') }}" class="flex items-center px-6 py-3 hover:bg-emerald-800 {{ request()->routeIs('admin.reservations.*') ? 'bg-emerald-800 border-l-4 border-green-400' : '' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>

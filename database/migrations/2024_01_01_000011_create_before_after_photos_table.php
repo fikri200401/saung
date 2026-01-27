@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('before_after_photos', function (Blueprint $table) {
+        // Tabel tidak dibuat - tidak relevan untuk sistem saung
+        /* Schema::create('before_after_photos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained()->onDelete('cascade');
             $table->string('before_photo')->nullable();
@@ -18,11 +19,11 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index('booking_id');
-        });
+        }); */
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('before_after_photos');
+        // Schema::dropIfExists('before_after_photos');
     }
 };

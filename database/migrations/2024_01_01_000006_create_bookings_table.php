@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('bookings', function (Blueprint $table) {
+        // Tabel tidak dibuat - sistem saung menggunakan 'reservations' untuk booking saung
+        /* Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->string('booking_code')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -37,11 +38,11 @@ return new class extends Migration
             $table->index(['booking_date', 'booking_time']);
             $table->index(['doctor_id', 'booking_date']);
             $table->index('status');
-        });
+        }); */
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('bookings');
+        // Schema::dropIfExists('bookings');
     }
 };

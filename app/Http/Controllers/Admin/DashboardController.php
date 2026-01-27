@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\Deposit;
 use App\Models\User;
 use App\Models\Voucher;
+use App\Models\Reservation;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -14,14 +14,14 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
-            'total_reservations_today' => \App\Models\Reservation::whereDate('reservation_date', today())->count(),
+            'total_reservations_today' => Reservation::whereDate('reservation_date', today())->count(),
             'pending_deposits' => Deposit::pending()->count(),
             'expired_deposits' => Deposit::expired()->count(),
             'total_members' => User::members()->count(),
             'active_vouchers' => Voucher::active()->count(),
         ];
 
-        $upcomingReservations = \App\Models\Reservation::active()
+        $upcomingReservations = Reservation::active()
             ->with(['user', 'saung', 'menus'])
             ->whereDate('reservation_date', '>=', today())
             ->orderBy('reservation_date')
@@ -30,7 +30,7 @@ class DashboardController extends Controller
             ->get();
 
         $pendingDeposits = Deposit::pending()
-            ->with(['reservation.user', 'reservation.saung', 'booking.user', 'booking.treatment'])
+            ->with(['reservation.user', 'reservation.saung'])
             ->orderBy('deadline_at')
             ->limit(10)
             ->get();

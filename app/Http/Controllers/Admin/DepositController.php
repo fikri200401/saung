@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
-use App\Models\Booking;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,7 @@ class DepositController extends Controller
 
     public function index(Request $request)
     {
-        $query = Deposit::with(['reservation.user', 'reservation.saung', 'booking.user', 'booking.treatment']);
+        $query = Deposit::with(['reservation.user', 'reservation.saung']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -33,7 +32,7 @@ class DepositController extends Controller
 
     public function show(Deposit $deposit)
     {
-        $deposit->load(['reservation.user', 'reservation.saung', 'booking.user', 'booking.treatment', 'booking.doctor', 'verifier']);
+        $deposit->load(['reservation.user', 'reservation.saung', 'verifier']);
         
         return view('admin.deposits.show', compact('deposit'));
     }

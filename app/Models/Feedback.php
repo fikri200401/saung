@@ -12,12 +12,9 @@ class Feedback extends Model
     protected $table = 'feedbacks';
 
     protected $fillable = [
-        'booking_id',
         'reservation_id',
         'user_id',
-        'treatment_id',
         'menu_id',
-        'doctor_id',
         'saung_id',
         'rating',
         'comment',
@@ -32,11 +29,6 @@ class Feedback extends Model
     /**
      * Relationships
      */
-    public function booking()
-    {
-        return $this->belongsTo(Booking::class);
-    }
-
     public function reservation()
     {
         return $this->belongsTo(Reservation::class);
@@ -47,19 +39,9 @@ class Feedback extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function treatment()
-    {
-        return $this->belongsTo(Treatment::class);
-    }
-
     public function menu()
     {
         return $this->belongsTo(Menu::class);
-    }
-
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
     }
 
     public function saung()

@@ -16,7 +16,6 @@ class Menu extends Model
         'description',
         'category',
         'price',
-        'photo',
         'image',
         'is_active',
         'is_popular',

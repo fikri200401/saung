@@ -8,21 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('doctors', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('specialization')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->text('bio')->nullable();
-            $table->string('image')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        // Tabel tidak dibuat - sistem saung tidak menggunakan doctors
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('doctors');
+        // No action needed
     }
 };

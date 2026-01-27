@@ -10,11 +10,9 @@ class Deposit extends Model
     use HasFactory;
 
     protected $fillable = [
-        'booking_id',
         'reservation_id',
         'amount',
-        'proof_of_payment', // Legacy field for old bookings
-        'proof_image',       // New field for deposits
+        'proof_image',
         'uploaded_at',
         'status',
         'deadline_at',
@@ -33,11 +31,6 @@ class Deposit extends Model
     /**
      * Relationships
      */
-    public function booking()
-    {
-        return $this->belongsTo(Booking::class);
-    }
-
     public function reservation()
     {
         return $this->belongsTo(Reservation::class);
