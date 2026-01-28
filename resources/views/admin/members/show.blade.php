@@ -151,30 +151,30 @@
             <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                 <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
                     <h3 class="text-lg leading-6 font-medium text-gray-900">
-                        Riwayat Booking Terbaru
+                        Riwayat Reservasi Terbaru
                     </h3>
                 </div>
                 <ul role="list" class="divide-y divide-gray-200">
-                    @forelse($member->bookings()->latest()->take(5)->get() as $booking)
+                    @forelse($member->reservations()->latest()->take(5)->get() as $reservation)
                     <li class="px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
-                                <p class="text-sm font-medium text-indigo-600">{{ $booking->booking_number }}</p>
-                                <p class="text-sm text-gray-500">{{ $booking->treatment->name }}</p>
-                                <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($booking->booking_date)->format('d/m/Y') }} {{ $booking->booking_time }}</p>
+                                <p class="text-sm font-medium text-indigo-600">{{ $reservation->reservation_code }}</p>
+                                <p class="text-sm text-gray-500">{{ $reservation->saung->name ?? 'Saung tidak tersedia' }}</p>
+                                <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($reservation->reservation_date)->format('d/m/Y') }} {{ $reservation->reservation_time }}</p>
                             </div>
                             <div>
-                                @if($booking->status === 'completed')
+                                @if($reservation->status === 'completed')
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         Selesai
                                     </span>
-                                @elseif($booking->status === 'cancelled')
+                                @elseif($reservation->status === 'cancelled')
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                         Batal
                                     </span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        {{ ucfirst($booking->status) }}
+                                        {{ ucfirst(str_replace('_', ' ', $reservation->status)) }}
                                     </span>
                                 @endif
                             </div>
@@ -182,7 +182,7 @@
                     </li>
                     @empty
                     <li class="px-6 py-12 text-center text-sm text-gray-500">
-                        Belum ada booking
+                        Belum ada reservasi
                     </li>
                     @endforelse
                 </ul>

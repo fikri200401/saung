@@ -29,19 +29,19 @@ class MemberController extends Controller
             });
         }
 
-        $members = $query->withCount('bookings')->orderBy('created_at', 'desc')->paginate(20);
+        $members = $query->withCount('reservations')->orderBy('created_at', 'desc')->paginate(20);
 
         return view('admin.members.index', compact('members'));
     }
 
     public function show(User $member)
     {
-        $member->load(['bookings.treatment', 'feedbacks', 'noShowNotes']);
+        $member->load(['reservations', 'feedbacks', 'noShowNotes']);
         
         $stats = [
-            'total_bookings' => $member->bookings()->count(),
-            'completed_bookings' => $member->bookings()->completed()->count(),
-            'cancelled_bookings' => $member->bookings()->where('status', 'cancelled')->count(),
+            'total_bookings' => $member->reservations()->count(),
+            'completed_bookings' => $member->reservations()->completed()->count(),
+            'cancelled_bookings' => $member->reservations()->where('status', 'cancelled')->count(),
             'no_show_count' => $member->noShowNotes()->count(),
         ];
 
