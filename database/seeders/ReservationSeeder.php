@@ -17,152 +17,165 @@ class ReservationSeeder extends Seeder
      */
     public function run(): void
     {
-        $customer = User::where('role', 'customer')->first();
+        $customers = User::where('role', 'customer')->get();
         $saungs = Saung::all();
         $menus = Menu::all();
 
-        if (!$customer || $saungs->isEmpty() || $menus->isEmpty()) {
+        if ($customers->isEmpty() || $saungs->isEmpty() || $menus->isEmpty()) {
             $this->command->warn('⚠️  Pastikan UserSeeder, SaungSeeder, dan MenuSeeder sudah dijalankan terlebih dahulu');
             return;
         }
 
-        // 1. RESERVASI COMPLETED (sudah selesai - kemarin)
-        $reservation1 = Reservation::create([
-            'reservation_code' => 'RSV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
-            'user_id' => $customer->id,
-            'saung_id' => $saungs->where('name', 'Saung Bambu')->first()?->id ?? $saungs->first()->id,
-            'reservation_date' => Carbon::yesterday()->format('Y-m-d'),
-            'reservation_time' => '18:00',
-            'end_time' => '21:00',
-            'duration' => 3, // 3 jam
-            'number_of_people' => 8,
-            'status' => 'completed',
-            'total_price' => 850000,
-            'discount_amount' => 0,
-            'final_price' => 850000,
-            'customer_notes' => 'Acara ulang tahun keluarga',
-            'admin_notes' => 'Acara berjalan lancar, customer sangat puas',
-            'is_manual_entry' => false,
-            'created_at' => Carbon::now()->subHours(30), // Booked 30 jam lalu (kemarin siang)
-            'updated_at' => Carbon::yesterday()->addHours(21), // Updated kemarin jam 9 malam
-        ]);
+        $statuses = ['completed', 'confirmed', 'deposit_confirmed', 'waiting_deposit', 'cancelled'];
+        $times = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+        $customerNotes = [
+            'Acara ulang tahun',
+            'Meeting keluarga',
+            'Gathering kantor',
+            'Arisan RT',
+            'Acara reuni',
+            'Makan siang keluarga',
+            'Acara pernikahan kecil',
+            'Syukuran',
+            null,
+        ];
 
-        // Attach menus untuk reservation 1
-        $menuIds = $menus->whereIn('name', ['Nasi Timbel Komplit', 'Ayam Bakar Madu', 'Sop Iga Sapi', 'Es Kelapa Muda'])->pluck('id')->toArray();
-        if (!empty($menuIds)) {
-            foreach ($menuIds as $menuId) {
-                $reservation1->menus()->attach($menuId, [
-                    'quantity' => rand(2, 5),
-                    'price' => Menu::find($menuId)->price ?? 0,
+        $reservationCount = 0;
+
+        // Generate 60 transaksi reservasi (30 hari terakhir sampai 30 hari ke depan)
+        for ($i = -30; $i <= 30; $i++) {
+            // Buat 1-3 reservasi per hari (lebih banyak di weekend)
+            $date = Carbon::now()->addDays($i);
+            $isWeekend = $date->isWeekend();
+            $reservationsPerDay = $isWeekend ? rand(2, 3) : rand(1, 2);
+
+            for ($j = 0; $j < $reservationsPerDay; $j++) {
+                $reservationCount++;
+                
+                // Tentukan status berdasarkan tanggal
+                if ($i < -2) {
+                    // Masa lalu (lebih dari 2 hari lalu) - mostly completed atau cancelled
+                    $status = rand(1, 10) <= 8 ? 'completed' : 'cancelled';
+                } elseif ($i >= -2 && $i < 0) {
+                    // 2 hari lalu sampai kemarin - completed atau cancelled
+                    $status = rand(1, 10) <= 9 ? 'completed' : 'cancelled';
+                } elseif ($i == 0) {
+                    // Hari ini - confirmed atau deposit_confirmed
+                    $status = rand(1, 2) == 1 ? 'confirmed' : 'deposit_confirmed';
+                } else {
+                    // Masa depan - berbagai status
+                    $randStatus = rand(1, 10);
+                    if ($randStatus <= 4) {
+                        $status = 'confirmed';
+                    } elseif ($randStatus <= 7) {
+                        $status = 'deposit_confirmed';
+                    } elseif ($randStatus <= 9) {
+                        $status = 'waiting_deposit';
+                    } else {
+                        $status = 'cancelled';
+                    }
+                }
+
+                $customer = $customers->random();
+                $saung = $saungs->random();
+                $numberOfPeople = rand(2, 20);
+                $duration = rand(2, 5);
+                $startTime = $times[array_rand($times)];
+                $endTime = Carbon::parse($startTime)->addHours($duration)->format('H:i');
+                
+                // Hitung total price berdasarkan menu
+                $selectedMenus = $menus->random(rand(3, 8));
+                $totalPrice = 0;
+                foreach ($selectedMenus as $menu) {
+                    $quantity = rand(2, $numberOfPeople);
+                    $totalPrice += $menu->price * $quantity;
+                }
+                
+                // Tambah biaya saung (misal 100k per jam)
+                $totalPrice += 100000 * $duration;
+                
+                // Random discount (20% chance ada diskon)
+                $discountAmount = rand(1, 100) <= 20 ? rand(50000, 200000) : 0;
+                $finalPrice = $totalPrice - $discountAmount;
+
+                // Tentukan kapan booking dibuat
+                if ($i < 0) {
+                    // Transaksi masa lalu - dibuat beberapa hari sebelum reservation_date
+                    $createdAt = Carbon::parse($date)->subDays(rand(3, 14));
+                } elseif ($i == 0) {
+                    // Hari ini - dibuat beberapa jam/hari yang lalu
+                    $createdAt = Carbon::now()->subHours(rand(5, 48));
+                } else {
+                    // Masa depan - dibuat beberapa hari yang lalu
+                    $createdAt = Carbon::now()->subDays(rand(1, 5));
+                }
+
+                $reservation = Reservation::create([
+                    'reservation_code' => 'RSV-' . strtoupper(substr(md5(uniqid() . $reservationCount), 0, 10)),
+                    'user_id' => $customer->id,
+                    'saung_id' => $saung->id,
+                    'reservation_date' => $date->format('Y-m-d'),
+                    'reservation_time' => $startTime,
+                    'end_time' => $endTime,
+                    'duration' => $duration,
+                    'number_of_people' => $numberOfPeople,
+                    'status' => $status,
+                    'total_price' => $totalPrice,
+                    'discount_amount' => $discountAmount,
+                    'final_price' => $finalPrice,
+                    'customer_notes' => $customerNotes[array_rand($customerNotes)],
+                    'admin_notes' => $status == 'cancelled' ? 'Dibatalkan oleh customer' : null,
+                    'is_manual_entry' => false,
+                    'created_at' => $createdAt,
+                    'updated_at' => $status == 'completed' ? Carbon::parse($date)->addHours(22) : $createdAt,
                 ]);
+
+                // Attach menus dengan quantity
+                foreach ($selectedMenus as $menu) {
+                    $reservation->menus()->attach($menu->id, [
+                        'quantity' => rand(1, ceil($numberOfPeople / 2)),
+                        'price' => $menu->price,
+                    ]);
+                }
+
+                // Buat deposit jika status deposit_confirmed
+                if ($status == 'deposit_confirmed') {
+                    Deposit::create([
+                        'reservation_id' => $reservation->id,
+                        'amount' => round($finalPrice * 0.3), // DP 30%
+                        'proof_image' => 'deposits/sample-deposit-' . $reservationCount . '.jpg',
+                        'status' => 'approved',
+                        'verified_by' => 1, // admin
+                        'verified_at' => $createdAt->copy()->addHours(rand(1, 12)),
+                        'deadline_at' => Carbon::parse($date)->subDay(),
+                        'created_at' => $createdAt->copy()->addMinutes(rand(30, 120)),
+                    ]);
+                }
+
+                // Buat deposit pending jika status waiting_deposit
+                if ($status == 'waiting_deposit') {
+                    // 50% chance sudah upload bukti tapi belum diverifikasi
+                    if (rand(1, 2) == 1) {
+                        Deposit::create([
+                            'reservation_id' => $reservation->id,
+                            'amount' => round($finalPrice * 0.3),
+                            'proof_image' => 'deposits/sample-deposit-' . $reservationCount . '.jpg',
+                            'status' => 'pending',
+                            'verified_by' => null,
+                            'verified_at' => null,
+                            'deadline_at' => Carbon::parse($date)->subDay(),
+                            'created_at' => $createdAt->copy()->addHours(rand(1, 24)),
+                        ]);
+                    }
+                }
             }
         }
 
-        // 2. RESERVASI DEPOSIT_CONFIRMED (hari ini sore)
-        $reservation2 = Reservation::create([
-            'reservation_code' => 'RSV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
-            'user_id' => $customer->id,
-            'saung_id' => $saungs->where('name', 'Saung VIP')->first()?->id ?? $saungs->skip(1)->first()->id,
-            'reservation_date' => Carbon::today()->format('Y-m-d'),
-            'reservation_time' => '18:00',
-            'end_time' => '22:00',
-            'duration' => 4,
-            'number_of_people' => 15,
-            'status' => 'deposit_confirmed',
-            'total_price' => 2500000,
-            'discount_amount' => 250000, // pakai voucher 10%
-            'final_price' => 2250000,
-            'customer_notes' => 'Acara meeting kantor, mohon tempat yang tenang',
-            'admin_notes' => null,
-            'is_manual_entry' => false,
-            'created_at' => Carbon::now()->subHours(5), // Booked 5 jam lalu
-        ]);
-
-        // Attach menus
-        $menuIds = $menus->whereIn('name', ['Paket Nasi Liwet Komplit', 'Gurame Bakar', 'Bebek Goreng', 'Es Teh Manis'])->pluck('id')->toArray();
-        if (!empty($menuIds)) {
-            foreach ($menuIds as $menuId) {
-                $reservation2->menus()->attach($menuId, [
-                    'quantity' => rand(5, 10),
-                    'price' => Menu::find($menuId)->price ?? 0,
-                ]);
-            }
-        }
-
-        // Create deposit for reservation2
-        Deposit::create([
-            'reservation_id' => $reservation2->id,
-            'amount' => 500000, // DP 500rb
-            'proof_image' => 'deposits/sample-deposit.jpg',
-            'status' => 'approved',
-            'verified_by' => 1, // admin
-            'verified_at' => Carbon::now()->subHours(3), // Verified 3 jam lalu
-            'deadline_at' => Carbon::now()->addDay(), // Deadline besok
-            'created_at' => Carbon::now()->subHours(4), // Upload 4 jam lalu
-        ]);
-
-        // 3. RESERVASI waiting_deposit (besok pagi)
-        $reservation3 = Reservation::create([
-            'reservation_code' => 'RSV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
-            'user_id' => $customer->id,
-            'saung_id' => $saungs->where('name', 'Saung Keluarga')->first()?->id ?? $saungs->skip(2)->first()->id,
-            'reservation_date' => Carbon::tomorrow()->format('Y-m-d'),
-            'reservation_time' => '11:00',
-            'end_time' => '14:00',
-            'duration' => 2,
-            'number_of_people' => 6,
-            'status' => 'waiting_deposit',
-            'total_price' => 450000,
-            'discount_amount' => 0,
-            'final_price' => 450000,
-            'customer_notes' => 'Makan siang keluarga',
-            'admin_notes' => null,
-            'is_manual_entry' => false,
-            'created_at' => Carbon::now()->subMinutes(45), // Booked 45 menit lalu
-        ]);
-
-        // Attach menus
-        $menuIds = $menus->whereIn('name', ['Nasi Bakar Ayam', 'Sate Maranggi', 'Jus Alpukat'])->pluck('id')->toArray();
-        if (!empty($menuIds)) {
-            foreach ($menuIds as $menuId) {
-                $reservation3->menus()->attach($menuId, [
-                    'quantity' => rand(2, 4),
-                    'price' => Menu::find($menuId)->price ?? 0,
-                ]);
-            }
-        }
-
-        // 4. RESERVASI CONFIRMED (3 hari lagi - tanpa DP karena harga kecil)
-        $reservation4 = Reservation::create([
-            'reservation_code' => 'RSV-' . strtoupper(substr(md5(uniqid()), 0, 10)),
-            'user_id' => $customer->id,
-            'saung_id' => $saungs->first()->id,
-            'reservation_date' => Carbon::now()->addDays(3)->format('Y-m-d'),
-            'reservation_time' => '15:00',
-            'end_time' => '18:00',
-            'duration' => 2,
-            'number_of_people' => 4,
-            'status' => 'confirmed',
-            'total_price' => 280000,
-            'discount_amount' => 0,
-            'final_price' => 280000,
-            'customer_notes' => null,
-            'admin_notes' => 'Langsung confirmed tanpa DP karena harga kecil',
-            'is_manual_entry' => false,
-            'created_at' => Carbon::now()->subHours(2), // Booked 2 jam lalu
-        ]);
-
-        // Attach menus
-        $menuIds = $menus->whereIn('name', ['Nasi Goreng Kampung', 'Es Jeruk'])->pluck('id')->toArray();
-        if (!empty($menuIds)) {
-            foreach ($menuIds as $menuId) {
-                $reservation4->menus()->attach($menuId, [
-                    'quantity' => rand(2, 3),
-                    'price' => Menu::find($menuId)->price ?? 0,
-                ]);
-            }
-        }
-
-        $this->command->info('✅ ReservationSeeder selesai! Dibuat 4 reservasi sample.');
+        $this->command->info("✅ ReservationSeeder selesai! Dibuat {$reservationCount} reservasi dengan berbagai status.");
+        $this->command->info("   - Completed: " . Reservation::where('status', 'completed')->count());
+        $this->command->info("   - Confirmed: " . Reservation::where('status', 'confirmed')->count());
+        $this->command->info("   - Deposit Confirmed: " . Reservation::where('status', 'deposit_confirmed')->count());
+        $this->command->info("   - Waiting Deposit: " . Reservation::where('status', 'waiting_deposit')->count());
+        $this->command->info("   - Cancelled: " . Reservation::where('status', 'cancelled')->count());
     }
 }
