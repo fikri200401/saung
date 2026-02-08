@@ -28,6 +28,29 @@
         </div>
     @endif
 
+    <!-- Search Form -->
+    <div class="bg-white rounded-lg shadow p-4 mb-4">
+        <form action="{{ route('admin.menus.index') }}" method="GET" class="flex gap-2">
+            <div class="flex-1">
+                <input type="text" 
+                       name="search" 
+                       value="{{ request('search') }}" 
+                       placeholder="Cari menu berdasarkan nama, deskripsi, atau kategori..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            </div>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg flex items-center gap-2">
+                <i class="fas fa-search"></i>
+                Cari
+            </button>
+            @if(request('search'))
+                <a href="{{ route('admin.menus.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    Reset
+                </a>
+            @endif
+        </form>
+    </div>
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">

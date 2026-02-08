@@ -12,8 +12,11 @@ class LandingController extends Controller
 {
     public function index()
     {
+        // Get popular menus
+        $popularMenus = Menu::active()->popular()->take(6)->get();
+        
         // Saung Nyonyah landing page
-        return view('landing.saung');
+        return view('landing.saung', compact('popularMenus'));
     }
 
     /**

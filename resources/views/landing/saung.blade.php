@@ -187,9 +187,10 @@
             </div>
 
             @php
-                $menus = \App\Models\Menu::active()->popular()->take(6)->get()->groupBy('category');
+                $menus = $popularMenus->groupBy('category');
             @endphp
 
+            @if($menus->count() > 0)
             @foreach($menus as $category => $categoryMenus)
             <div class="mb-12">
                 <h3 class="text-2xl font-serif font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -217,6 +218,12 @@
                 </div>
             </div>
             @endforeach
+            @else
+            <div class="text-center py-12">
+                <i class="fas fa-utensils text-4xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">Belum ada menu populer tersedia.</p>
+            </div>
+            @endif
 
             <div class="text-center mt-10">
                 <a href="#" class="inline-block px-8 py-3 border-2 border-brand text-brand rounded-full font-semibold hover:bg-brand hover:text-white transition">

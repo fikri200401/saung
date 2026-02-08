@@ -9,9 +9,21 @@ use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $menus = Menu::orderBy('category')->orderBy('name')->paginate(15);
+        $query = Menu::query();
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('category', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        $menus = $query->orderBy('category')->orderBy('name')->paginate(15);
         return view('admin.menus.index', compact('menus'));
     }
 
